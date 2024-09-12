@@ -8,6 +8,7 @@ from multiprocessing.managers import SharedMemoryManager
 from umi.real_world.rtde_interpolation_controller import RTDEInterpolationController
 from umi.real_world.wsg_controller import WSGController
 from umi.real_world.franka_interpolation_controller import FrankaInterpolationController
+from umi.real_world.fr_interpolation_controller import FrInterpolationController
 from umi.real_world.multi_uvc_camera import MultiUvcCamera, VideoRecorder
 from diffusion_policy.common.timestamp_accumulator import (
     TimestampActionAccumulator,
@@ -119,7 +120,8 @@ class BimanualUmiEnv:
                     return data
                 transform.append(tf4k)
             else:
-                res = (1920, 1080)
+                # res = (1920, 1080)
+                res = (1280, 720)
                 fps = 60
                 buf = 1
                 bit_rate = 3000*1000
@@ -201,6 +203,7 @@ class BimanualUmiEnv:
             )
 
         cube_diag = np.linalg.norm([1,1,1])
+        # 适配各自机械臂
         j_init = np.array([0,-90,-90,-90,90,0]) / 180 * np.pi
         if not init_joints:
             j_init = None
@@ -238,6 +241,26 @@ class BimanualUmiEnv:
                     Kx_scale=1.0,
                     Kxd_scale=np.array([2.0,1.5,2.0,1.0,1.0,1.0]),
                     verbose=False,
+                    receive_latency=rc['robot_obs_latency']
+                )
+            elif rc['robot_type'].startswith('fr'):
+                this_robot = FrInterpolationController(
+                    shm_manager=shm_manager,
+                    robot_ip=rc['robot_ip'],
+                    frequency=500 if rc['robot_type'] == 'ur5e' else 125,
+                    lookahead_time=0.1,
+                    gain=300,
+                    max_pos_speed=max_pos_speed * cube_diag,
+                    max_rot_speed=max_rot_speed * cube_diag,
+                    launch_timeout=3,
+                    tcp_offset_pose=[0, 0, rc['tcp_offset'], 0, 0, 0],
+                    payload_mass=None,
+                    payload_cog=None,
+                    joints_init=j_init,
+                    joints_init_speed=1.05,
+                    soft_real_time=False,
+                    verbose=False,
+                    receive_keys=None,
                     receive_latency=rc['robot_obs_latency']
                 )
             else:

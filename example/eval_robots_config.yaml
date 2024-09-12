@@ -3,7 +3,7 @@
   # comment out robot #1 if only using 1 arm
   "robots": [
     {
-      "robot_type": "ur5e",
+      "robot_type": "fr",
       "robot_ip": "192.168.0.8",
       "robot_obs_latency": 0.0001, "robot_action_latency": 0.1, "tcp_offset": 0.235,
       # table height for finger-table collision avoidance
@@ -11,8 +11,19 @@
       "height_threshold": -0.024,
       # sphere collision primitive size and location for inter-gripper collision avoidance
       # 0 to disable
-      "sphere_radius": 0.1, "sphere_center": [0, -0.06, -0.185]
+      "sphere_radius": 0.1, "sphere_center": [ 0, -0.06, -0.185 ]
     },
+#    {
+#      "robot_type": "ur5e",
+#      "robot_ip": "192.168.0.8",
+#      "robot_obs_latency": 0.0001, "robot_action_latency": 0.1, "tcp_offset": 0.235,
+#      # table height for finger-table collision avoidance
+#      # -inf to disable
+#      "height_threshold": -0.024,
+#      # sphere collision primitive size and location for inter-gripper collision avoidance
+#      # 0 to disable
+#      "sphere_radius": 0.1, "sphere_center": [0, -0.06, -0.185]
+#    },
     # {
     #   "robot_type": "ur5",
     #   "robot_ip": "192.168.0.9",
