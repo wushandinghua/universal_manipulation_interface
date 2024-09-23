@@ -76,9 +76,6 @@ class DHBinaryDriver:
             print('open successful')
             return ret
 
-    def close(self):
-        self.close()
-
     def WriteRegisterFunc(self, index, value):
         send_buf = [0, 0, 0, 0, 0, 0, 0, 0]
         send_buf[0] = self.gripper_ID  # 抓手ID
@@ -254,7 +251,7 @@ class DHBinaryDriver:
         # self.SetTargetSpeed(vel)
         self.script_position_pd(pos, vel)
 
-        position_and_velocitys = [(0, 20), (40, 40), (80, 20)]
+        position_and_velocitys = [(0, 20), (20, 40), (40, 40), (60, 20), (80, 20)]
         for position, velocity in position_and_velocitys:
             g_state = 0
             pos, vel = self.pre_position(position,velocity)
@@ -263,9 +260,10 @@ class DHBinaryDriver:
             # Convert mm position to percentage (0-1000)
             position_percent = int((pos / 80.0) * 1000)
             self.SetTargetPosition(position_percent)
-            while g_state == 0:
-                g_state = self.GetGripState()
-                sleep(0.2)
+            # while g_state == 0:
+            #     g_state = self.GetGripState()
+            #     sleep(0.2)
+            sleep(1e-2)
             g_position = self.GetCurrentPosition()
             print('g_position (percent)', g_position)
             print('g_position (mm)', g_position * 80 / 1000)
@@ -280,9 +278,10 @@ class DHBinaryDriver:
             # 使用 pre_position 方法
             self.script_position_pd(position, velocity, force)
             # 等待夹爪动作完成
-            while g_state == 0:
-                g_state = self.GetGripState()
-                sleep(0.43)
+            # while g_state == 0:
+            #     g_state = self.GetGripState()
+            #     sleep(0.43)
+            sleep(2e-2)
             g_position = self.GetCurrentPosition()
             print('g_position (percent)', g_position)
             print('g_position (mm)', g_position * 80 / 1000)
