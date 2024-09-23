@@ -201,7 +201,7 @@ class DHBinaryDriver:
     def custom_script(self, *args):
         state = self.GetGripState()
         position = self.GetCurrentPosition()
-        position = (position * 90 / 1000) # todo: 为啥是90？
+        position = (position * 80 / 1000)
         velocity = self.GetCurrentTargetSpeed()
         info = {
             'state': state,
@@ -214,7 +214,7 @@ class DHBinaryDriver:
         self.SetTargetForce(int(force))
         self.SetTargetSpeed(int(velocity))
         # Convert mm position to percentage (0-1000)
-        position_percent = int(((position / 90.0) * 1000))
+        position_percent = int(((position / 80.0) * 1000))
         # print('position_percent',position_percent)
         self.SetTargetPosition(position_percent)
         # time.sleep(1e-3)
@@ -248,53 +248,53 @@ class DHBinaryDriver:
         print('force = ',force)
         print('===============================')
 
-        pos = 1000
+        pos = 80
         vel = 20
-        self.SetTargetPosition(pos)
-        self.SetTargetSpeed(vel)
-        # self.script_position_pd(pos, vel)
+        # self.SetTargetPosition(pos)
+        # self.SetTargetSpeed(vel)
+        self.script_position_pd(pos, vel)
 
-        # position_and_velocitys = [(0, 20), (40, 40), (80, 20)]
-        # for position, velocity in position_and_velocitys:
-        #     g_state = 0
-        #     pos, vel = self.pre_position(position,velocity)
-        #     # self.script_position_pd(position,velocity)
-        #     self.SetTargetSpeed(int(vel))
-        #     # Convert mm position to percentage (0-1000)
-        #     position_percent = int((pos / 80.0) * 1000)
-        #     self.SetTargetPosition(position_percent)
-        #     while g_state == 0:
-        #         g_state = self.GetGripState()
-        #         sleep(0.2)
-        #     g_position = self.GetCurrentPosition()
-        #     print('g_position (percent)', g_position)
-        #     print('g_position (mm)', g_position * 80 / 1000)
-        #     g_velocity = self.GetCurrentTargetSpeed()
-        #     print('g_velocity', g_velocity)
-        #     print('gripper_state', g_state)
-        #     print('===============================')
-        #     sleep(delay_between_positions)
-        #
-        # for position, velocity in position_and_velocitys:
-        #     g_state = 0
-        #     # 使用 pre_position 方法
-        #     self.script_position_pd(position, velocity, force)
-        #     # 等待夹爪动作完成
-        #     while g_state == 0:
-        #         g_state = self.GetGripState()
-        #         sleep(1)
-        #     g_position = self.GetCurrentPosition()
-        #     print('g_position (percent)', g_position)
-        #     print('g_position (mm)', g_position * 80 / 1000)
-        #     g_velocity = self.GetCurrentTargetSpeed()
-        #     print('g_velocity', g_velocity)
-        #     print('gripper_state', g_state)
-        #     print('===============================')
-        #     sleep(delay_between_positions)
+        position_and_velocitys = [(0, 20), (40, 40), (80, 20)]
+        for position, velocity in position_and_velocitys:
+            g_state = 0
+            pos, vel = self.pre_position(position,velocity)
+            # self.script_position_pd(position,velocity)
+            self.SetTargetSpeed(int(vel))
+            # Convert mm position to percentage (0-1000)
+            position_percent = int((pos / 80.0) * 1000)
+            self.SetTargetPosition(position_percent)
+            while g_state == 0:
+                g_state = self.GetGripState()
+                sleep(0.2)
+            g_position = self.GetCurrentPosition()
+            print('g_position (percent)', g_position)
+            print('g_position (mm)', g_position * 80 / 1000)
+            g_velocity = self.GetCurrentTargetSpeed()
+            print('g_velocity', g_velocity)
+            print('gripper_state', g_state)
+            print('===============================')
+            sleep(delay_between_positions)
+
+        for position, velocity in position_and_velocitys:
+            g_state = 0
+            # 使用 pre_position 方法
+            self.script_position_pd(position, velocity, force)
+            # 等待夹爪动作完成
+            while g_state == 0:
+                g_state = self.GetGripState()
+                sleep(0.43)
+            g_position = self.GetCurrentPosition()
+            print('g_position (percent)', g_position)
+            print('g_position (mm)', g_position * 80 / 1000)
+            g_velocity = self.GetCurrentTargetSpeed()
+            print('g_velocity', g_velocity)
+            print('gripper_state', g_state)
+            print('===============================')
+            sleep(delay_between_positions)
 
         self.close()
 
 if __name__ == '__main__':
-    driver = DHBinaryDriver()
+    driver = DHBinaryDriver('192.168.58.18', 8887)
     driver.socket_gripper()
 
