@@ -4,8 +4,8 @@
   "robots": [
     {
       "robot_type": "fr",
-      "robot_ip": "192.168.0.8",
-      "robot_obs_latency": 0.0001, "robot_action_latency": 0.1, "tcp_offset": 0.235,
+      "robot_ip": "192.168.58.2",
+      "robot_obs_latency": 0.006, "robot_action_latency": 0.1, "tcp_offset": 0.235,
       # table height for finger-table collision avoidance
       # -inf to disable
       "height_threshold": -0.024,
@@ -35,8 +35,8 @@
   # gripper configurations, 0->right 1->left
   "grippers": [
     {
-      "gripper_ip": "192.168.0.18",
-      "gripper_port": 1000, "gripper_obs_latency": 0.01, "gripper_action_latency": 0.1
+      "gripper_ip": "192.168.58.18",
+      "gripper_port": 8887, "gripper_obs_latency": 0.01, "gripper_action_latency": 0.1
     },
     # {
     #   "gripper_ip": "192.168.0.27",

@@ -3,16 +3,13 @@ import time
 import enum
 import multiprocessing as mp
 from multiprocessing.managers import SharedMemoryManager
-import scipy.interpolate as si
-import scipy.spatial.transform as st
 import numpy as np
-from rtde_control import RTDEControlInterface
-from rtde_receive import RTDEReceiveInterface
 from umi.shared_memory.shared_memory_queue import (
     SharedMemoryQueue, Empty)
 from umi.shared_memory.shared_memory_ring_buffer import SharedMemoryRingBuffer
 from umi.common.pose_trajectory_interpolator import PoseTrajectoryInterpolator
 from diffusion_policy.common.precise_sleep import precise_wait
+from fairino import Robot
 
 class Command(enum.Enum):
     STOP = 0
@@ -29,7 +26,7 @@ class FrInterpolationController(mp.Process):
 
     def __init__(self,
             shm_manager: SharedMemoryManager, 
-            robot_ip, 
+            robot_ip='192.168.58.2',
             frequency=125, 
             lookahead_time=0.1, 
             gain=300,
@@ -38,7 +35,7 @@ class FrInterpolationController(mp.Process):
             launch_timeout=3,
             tcp_offset_pose=None,
             payload_mass=None,
-            payload_cog=None,
+            payload_com=None,
             joints_init=None,
             joints_init_speed=1.05,
             soft_real_time=False,
@@ -53,9 +50,9 @@ class FrInterpolationController(mp.Process):
         gain: [100, 2000] proportional gain for following target position
         max_pos_speed: m/s
         max_rot_speed: rad/s
-        tcp_offset_pose: 6d pose
+        tcp_offset_pose: 6d pose, 单位[mm][°]
         payload_mass: float
-        payload_cog: 3d position, center of gravity
+        payload_com: 3d position, center of mass
         soft_real_time: enables round-robin scheduling and real-time priority
             requires running scripts/rtprio_setup.sh before hand.
 
@@ -67,19 +64,21 @@ class FrInterpolationController(mp.Process):
         assert 0 < max_pos_speed
         assert 0 < max_rot_speed
         if tcp_offset_pose is not None:
-            tcp_offset_pose = np.array(tcp_offset_pose)
-            assert tcp_offset_pose.shape == (6,)
+            # tcp_offset_pose = np.array(tcp_offset_pose)
+            # assert tcp_offset_pose.shape == (6,)
+            assert len(tcp_offset_pose) == 6
         if payload_mass is not None:
             assert 0 <= payload_mass <= 5
-        if payload_cog is not None:
-            payload_cog = np.array(payload_cog)
-            assert payload_cog.shape == (3,)
-            assert payload_mass is not None
+        if payload_com is not None:
+            # payload_com = np.array(payload_com)
+            # assert payload_com.shape == (3,)
+            # assert payload_mass is not None
+            assert len(payload_com) == 3
         if joints_init is not None:
             joints_init = np.array(joints_init)
             assert joints_init.shape == (6,)
 
-        super().__init__(name="AuboInterpolationController")
+        super().__init__(name="FrInterpolationController")
         self.robot_ip = robot_ip
         self.frequency = frequency
         self.lookahead_time = lookahead_time
@@ -89,12 +88,13 @@ class FrInterpolationController(mp.Process):
         self.launch_timeout = launch_timeout
         self.tcp_offset_pose = tcp_offset_pose
         self.payload_mass = payload_mass
-        self.payload_cog = payload_cog
+        self.payload_com = payload_com
         self.joints_init = joints_init
         self.joints_init_speed = joints_init_speed
         self.soft_real_time = soft_real_time
         self.receive_latency = receive_latency
         self.verbose = verbose
+        self.tool_id = 1
 
         if get_max_k is None:
             get_max_k = int(frequency * 5)
@@ -116,19 +116,19 @@ class FrInterpolationController(mp.Process):
         if receive_keys is None:
             receive_keys = [
                 'ActualTCPPose',
-                'ActualTCPSpeed',
-                'ActualQ',
-                'ActualQd',
+                # 'ActualTCPSpeed',
+                # 'ActualQ',
+                # 'ActualQd',
 
-                'TargetTCPPose',
-                'TargetTCPSpeed',
-                'TargetQ',
-                'TargetQd'
+                # 'TargetTCPPose',
+                # 'TargetTCPSpeed',
+                # 'TargetQ',
+                # 'TargetQd'
             ]
-        rtde_r = RTDEReceiveInterface(hostname=robot_ip)
+        self.robot = Robot.RPC(self.robot_ip)
         example = dict()
         for key in receive_keys:
-            example[key] = np.array(getattr(rtde_r, 'get'+key)())
+            example[key] = np.array(getattr(self.robot, 'Get'+key)())
         example['robot_receive_timestamp'] = time.time()
         example['robot_timestamp'] = time.time()
         ring_buffer = SharedMemoryRingBuffer.create_from_examples(
@@ -150,7 +150,7 @@ class FrInterpolationController(mp.Process):
         if wait:
             self.start_wait()
         if self.verbose:
-            print(f"[AuboInterpolationController] Controller process spawned at {self.pid}")
+            print(f"[FrInterpolationController] Controller process spawned at {self.pid}")
 
     def stop(self, wait=True):
         message = {
@@ -224,31 +224,42 @@ class FrInterpolationController(mp.Process):
             os.sched_setscheduler(
                 0, os.SCHED_RR, os.sched_param(20))
 
-        # start rtde
-        robot_ip = self.robot_ip
-        rtde_c = RTDEControlInterface(hostname=robot_ip)
-        rtde_r = RTDEReceiveInterface(hostname=robot_ip)
-
+        # start fr
+        robot = self.robot
         try:
             if self.verbose:
-                print(f"[AuboInterpolationController] Connect to robot: {robot_ip}")
+                print(f"[FrInterpolationController] Connect to robot: {self.robot_ip}")
 
             # set parameters
             if self.tcp_offset_pose is not None:
-                rtde_c.setTcp(self.tcp_offset_pose)
+                '''
+                id:坐标系编号，范围[0~14]；
+                t_coord:工具中心点相对末端法兰中心位姿，单位[mm][°]；
+                type:0-工具坐标系，1-传感器坐标系；
+                install:安装位置，0-机器人末端，1-机器人外部
+                '''
+                assert robot.SetToolCoord(id=self.tool_id, t_coord=self.tcp_offset_pose, type=0, install=0) == 0
+
             if self.payload_mass is not None:
-                if self.payload_cog is not None:
-                    assert rtde_c.setPayload(self.payload_mass, self.payload_cog)
-                else:
-                    assert rtde_c.setPayload(self.payload_mass)
+                # 单位[kg]
+                assert robot.SetLoadWeight(self.payload_mass) == 0
+
+            if self.payload_com is not None:
+                # x,y,z:质心坐标，单位[mm]
+                assert robot.SetLoadCoord(self.payload_com[0], self.payload_com[1], self.payload_com[2])
             
             # init pose
             if self.joints_init is not None:
-                assert rtde_c.moveJ(self.joints_init, self.joints_init_speed, 1.4)
+                '''
+                joint_pos:目标关节位置，单位[°]；
+                tool:工具号，[0~14]；
+                user:工件号，[0~14]；
+                '''
+                assert robot.moveJ(self.joints_init, self.tool_id, 0)
 
             # main loop
             dt = 1. / self.frequency
-            curr_pose = rtde_r.getActualTCPPose()
+            curr_pose = robot.GetActualTCPPose()
             # use monotonic time to make sure the control loop never go backward
             curr_t = time.monotonic()
             last_waypoint_time = curr_t
@@ -260,6 +271,8 @@ class FrInterpolationController(mp.Process):
             t_start = time.monotonic()
             iter_idx = 0
             keep_running = True
+            error = robot.ServoMoveStart()  # 伺服运动开始
+            print("伺服运动开始错误码：", error)
             while keep_running:
                 # start control iteration
                 # t_start = rtde_c.initPeriod()
@@ -270,18 +283,18 @@ class FrInterpolationController(mp.Process):
                 # if diff > 0:
                 #     print('extrapolate', diff)
                 pose_command = pose_interp(t_now)
-                vel = 0.5
-                acc = 0.5
-                assert rtde_c.servoL(pose_command, 
-                    vel, acc, # dummy, not used by ur5
-                    dt, 
-                    self.lookahead_time, 
-                    self.gain)
+                vel = 50
+                acc = 50
+                assert robot.ServoCart(mode=0,
+                                       desc_pos=pose_command,
+                                       vel=vel, acc=acc,
+                                       cmdT=dt,
+                                       filterT=self.lookahead_time, gain=self.gain) == 0
                 
                 # update robot state
                 state = dict()
                 for key in self.receive_keys:
-                    state[key] = np.array(getattr(rtde_r, 'get'+key)())
+                    state[key] = np.array(getattr(robot, 'Get'+key)())
                 t_recv = time.time()
                 state['robot_receive_timestamp'] = t_recv
                 state['robot_timestamp'] = t_recv - self.receive_latency
@@ -326,7 +339,7 @@ class FrInterpolationController(mp.Process):
                         )
                         last_waypoint_time = t_insert
                         if self.verbose:
-                            print("[AuboInterpolationController] New pose target:{} duration:{}s".format(
+                            print("[FrInterpolationController] New pose target:{} duration:{}s".format(
                                 target_pose, duration))
                     elif cmd == Command.SCHEDULE_WAYPOINT.value:
                         target_pose = command['target_pose']
@@ -358,18 +371,16 @@ class FrInterpolationController(mp.Process):
                 iter_idx += 1
 
                 if self.verbose:
-                    print(f"[AuboInterpolationController] Actual frequency {1/(time.monotonic() - t_now)}")
+                    print(f"[FrInterpolationController] Actual frequency {1/(time.monotonic() - t_now)}")
 
         finally:
             # manditory cleanup
             # decelerate
-            rtde_c.servoStop()
+            error = robot.ServoMoveEnd()  # 伺服运动结束
+            print("伺服运动结束错误码：", error)
 
             # terminate
-            rtde_c.stopScript()
-            rtde_c.disconnect()
-            rtde_r.disconnect()
             self.ready_event.set()
 
             if self.verbose:
-                print(f"[AuboInterpolationController] Disconnected from robot: {robot_ip}")
+                print(f"[FrInterpolationController] Disconnected from robot: {self.robot_ip}")

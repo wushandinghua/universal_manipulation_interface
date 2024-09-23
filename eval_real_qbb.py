@@ -281,7 +281,8 @@ def main(input, output, robot_config,
 
                 t_start = time.monotonic()
                 iter_idx = 0
-                while True:
+                # while True:
+                while False:
                     # calculate timing
                     t_cycle_end = t_start + (iter_idx + 1) * dt
                     t_sample = t_cycle_end - command_latency

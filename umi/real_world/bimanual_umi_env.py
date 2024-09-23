@@ -5,6 +5,8 @@ import time
 import shutil
 import math
 from multiprocessing.managers import SharedMemoryManager
+
+from umi.real_world.dh_controller import DHController
 from umi.real_world.rtde_interpolation_controller import RTDEInterpolationController
 from umi.real_world.wsg_controller import WSGController
 from umi.real_world.franka_interpolation_controller import FrankaInterpolationController
@@ -209,8 +211,10 @@ class BimanualUmiEnv:
             j_init = None
 
         assert len(robots_config) == len(grippers_config)
-        robots: List[RTDEInterpolationController] = list()
-        grippers: List[WSGController] = list()
+        # robots: List[RTDEInterpolationController] = list()
+        robots: List[FrInterpolationController] = list()
+        # grippers: List[WSGController] = list()
+        grippers: List[DHController] = list()
         for rc in robots_config:
             if rc['robot_type'].startswith('ur5'):
                 assert rc['robot_type'] in ['ur5', 'ur5e']
@@ -247,15 +251,15 @@ class BimanualUmiEnv:
                 this_robot = FrInterpolationController(
                     shm_manager=shm_manager,
                     robot_ip=rc['robot_ip'],
-                    frequency=500 if rc['robot_type'] == 'ur5e' else 125,
+                    frequency=125,
                     lookahead_time=0.1,
                     gain=300,
-                    max_pos_speed=max_pos_speed * cube_diag,
-                    max_rot_speed=max_rot_speed * cube_diag,
+                    max_pos_speed=1.0,
+                    max_rot_speed=6*cube_diag, # todo:未知
                     launch_timeout=3,
                     tcp_offset_pose=[0, 0, rc['tcp_offset'], 0, 0, 0],
                     payload_mass=None,
-                    payload_cog=None,
+                    payload_com=None,
                     joints_init=j_init,
                     joints_init_speed=1.05,
                     soft_real_time=False,
@@ -268,12 +272,18 @@ class BimanualUmiEnv:
             robots.append(this_robot)
 
         for gc in grippers_config:
-            this_gripper = WSGController(
+            # this_gripper = WSGController(
+            #     shm_manager=shm_manager,
+            #     hostname=gc['gripper_ip'],
+            #     port=gc['gripper_port'],
+            #     receive_latency=gc['gripper_obs_latency'],
+            #     use_meters=True
+            # )
+            this_gripper = DHController(
                 shm_manager=shm_manager,
                 hostname=gc['gripper_ip'],
                 port=gc['gripper_port'],
-                receive_latency=gc['gripper_obs_latency'],
-                use_meters=True
+                receive_latency=gc['gripper_obs_latency']
             )
 
             grippers.append(this_gripper)
