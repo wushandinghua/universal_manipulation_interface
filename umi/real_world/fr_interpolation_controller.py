@@ -296,12 +296,14 @@ class FrInterpolationController(mp.Process):
                 pose_command = m_to_mm(pose_command)
                 vel = 50
                 acc = 50
-                assert robot.ServoCart(mode=0,
+                error = robot.ServoCart(mode=0,
                                        desc_pos=pose_command,
                                        vel=vel, acc=acc,
                                        cmdT=dt,
                                        filterT=self.lookahead_time, gain=self.gain) == 0
-                
+                if error != 0:
+                    print('error:', error, 'pose:', pose_command)
+                assert error == 0
                 # update robot state
                 state = dict()
                 for key in self.receive_keys:

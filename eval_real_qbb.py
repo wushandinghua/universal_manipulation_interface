@@ -434,6 +434,7 @@ def main(input, output, robot_config,
                 '''
                 # ========== policy control loop ==============
                 try:
+                    print('========== policy control loop ==============s')
                     # start episode
                     policy.reset()
                     start_delay = 1.0
@@ -568,6 +569,7 @@ def main(input, output, robot_config,
                         precise_wait(t_cycle_end - frame_latency)
                         iter_idx += steps_per_inference
 
+                    print('========== policy control loop ==============e')
                 except KeyboardInterrupt:
                     print("Interrupted!")
                     # stop robot.
