@@ -275,12 +275,12 @@ class FrInterpolationController(mp.Process):
                 times=[curr_t],
                 poses=[curr_pose]
             )
-            
+
+            error = robot.ServoMoveStart()  # 伺服运动开始
+            print("伺服运动开始错误码：", error)
             t_start = time.monotonic()
             iter_idx = 0
             keep_running = True
-            error = robot.ServoMoveStart()  # 伺服运动开始
-            print("伺服运动开始错误码：", error)
             while keep_running:
                 # start control iteration
                 # t_start = rtde_c.initPeriod()
