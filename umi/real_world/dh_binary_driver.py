@@ -248,7 +248,7 @@ class DHBinaryDriver:
         print('force = ',force)
         print('===============================')
 
-        pos = 80
+        pos = 0
         vel = 20
         # self.SetTargetPosition(pos)
         # self.SetTargetSpeed(vel)
@@ -276,7 +276,7 @@ class DHBinaryDriver:
             print('===============================')
             sleep(delay_between_positions)
 
-        for position, velocity in position_and_velocitys:
+        for position, velocity in sorted(position_and_velocitys, lambda x: x[0], reverse=True):
             g_state = 0
             # 使用 pre_position 方法
             self.script_position_pd(position, velocity, force)
