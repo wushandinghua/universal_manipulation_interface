@@ -495,8 +495,8 @@ class BimanualUmiEnv:
                 self.obs_accumulator.put(
                     data={
                         f'robot{robot_idx}_eef_pose': last_robot_data['ActualTCPPose'],
-                        f'robot{robot_idx}_joint_pos': last_robot_data['ActualQ'],
-                        f'robot{robot_idx}_joint_vel': last_robot_data['ActualQd'],
+                        # f'robot{robot_idx}_joint_pos': last_robot_data['ActualQ'],
+                        # f'robot{robot_idx}_joint_vel': last_robot_data['ActualQd'],
                     },
                     timestamps=last_robot_data['robot_timestamp']
                 )
