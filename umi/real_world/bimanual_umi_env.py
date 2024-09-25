@@ -251,7 +251,7 @@ class BimanualUmiEnv:
                 this_robot = FrInterpolationController(
                     shm_manager=shm_manager,
                     robot_ip=rc['robot_ip'],
-                    frequency=62.5,
+                    frequency=10,
                     lookahead_time=0.1,
                     gain=300,
                     max_pos_speed=1.0,
@@ -263,7 +263,7 @@ class BimanualUmiEnv:
                     joints_init=j_init,
                     joints_init_speed=1.05,
                     soft_real_time=False,
-                    verbose=False,
+                    verbose=True,
                     receive_keys=None,
                     receive_latency=rc['robot_obs_latency']
                 )
