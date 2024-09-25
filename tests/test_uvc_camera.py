@@ -11,13 +11,13 @@ import time
 from multiprocessing.managers import SharedMemoryManager
 from umi.real_world.uvc_camera import UvcCamera, VideoRecorder
 from umi.common.usb_util import reset_all_elgato_devices, get_sorted_v4l_paths
-from polymetis import RobotInterface
 
 
 def test():
     # Find and reset all Elgato capture cards.
     # Required to workaround a firmware bug.
     reset_all_elgato_devices()
+    time.sleep(0.1)
     v4l_paths = get_sorted_v4l_paths()
     v4l_path = v4l_paths[0]
     
