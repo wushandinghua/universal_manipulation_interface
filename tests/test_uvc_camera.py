@@ -32,17 +32,17 @@ def test():
         # )
         video_recorder = VideoRecorder(
             shm_manager=shm_manager,
-            fps=30,
+            fps=60,
             codec='h264_nvenc',
             input_pix_fmt='bgr24',
-            bit_rate=6000*1000
+            bit_rate=3000*1000
         )
 
         with UvcCamera(
             shm_manager=shm_manager,
             dev_video_path=v4l_path,
-            resolution=(1920, 1080),
-            capture_fps=30,
+            resolution=(1280, 720),
+            capture_fps=60,
             video_recorder=video_recorder,
             put_downsample=False,
             verbose=True
