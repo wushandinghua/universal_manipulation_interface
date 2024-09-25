@@ -4,6 +4,8 @@ import enum
 import multiprocessing as mp
 from multiprocessing.managers import SharedMemoryManager
 import numpy as np
+
+from umi.common.pose_util import m_to_mm
 from umi.shared_memory.shared_memory_queue import (
     SharedMemoryQueue, Empty)
 from umi.shared_memory.shared_memory_ring_buffer import SharedMemoryRingBuffer
@@ -75,8 +77,8 @@ class FrInterpolationController(mp.Process):
             # assert payload_mass is not None
             assert len(payload_com) == 3
         if joints_init is not None:
-            joints_init = np.array(joints_init)
-            assert joints_init.shape == (6,)
+            # joints_init = np.array(joints_init)
+            assert len(joints_init) == 6
 
         super().__init__(name="FrInterpolationController")
         self.robot_ip = robot_ip
@@ -128,7 +130,11 @@ class FrInterpolationController(mp.Process):
         self.robot = Robot.RPC(self.robot_ip)
         example = dict()
         for key in receive_keys:
-            example[key] = np.array(getattr(self.robot, 'Get'+key)())
+            # 一般返回二元组(ret_code, ret)，取第二个
+            _, ret = getattr(self.robot, 'Get'+key)()
+            if 'Pose' in key:
+                ret = m_to_mm(ret, inverse=True)
+            example[key] = np.array(ret)
         example['robot_receive_timestamp'] = time.time()
         example['robot_timestamp'] = time.time()
         ring_buffer = SharedMemoryRingBuffer.create_from_examples(
@@ -246,7 +252,7 @@ class FrInterpolationController(mp.Process):
 
             if self.payload_com is not None:
                 # x,y,z:质心坐标，单位[mm]
-                assert robot.SetLoadCoord(self.payload_com[0], self.payload_com[1], self.payload_com[2])
+                assert robot.SetLoadCoord(self.payload_com[0], self.payload_com[1], self.payload_com[2]) == 0
             
             # init pose
             if self.joints_init is not None:
@@ -255,11 +261,13 @@ class FrInterpolationController(mp.Process):
                 tool:工具号，[0~14]；
                 user:工件号，[0~14]；
                 '''
-                assert robot.moveJ(self.joints_init, self.tool_id, 0)
+                assert robot.moveJ(self.joints_init, self.tool_id, 0) == 0
 
             # main loop
             dt = 1. / self.frequency
-            curr_pose = robot.GetActualTCPPose()
+            error, curr_pose = robot.GetActualTCPPose()
+            assert error == 0
+            curr_pose = m_to_mm(curr_pose, inverse=True)
             # use monotonic time to make sure the control loop never go backward
             curr_t = time.monotonic()
             last_waypoint_time = curr_t
@@ -283,6 +291,9 @@ class FrInterpolationController(mp.Process):
                 # if diff > 0:
                 #     print('extrapolate', diff)
                 pose_command = pose_interp(t_now)
+                # 法奥位姿里的位置单位是毫米，这里需要转换
+                pose_command = list(pose_command)
+                pose_command = m_to_mm(pose_command)
                 vel = 50
                 acc = 50
                 assert robot.ServoCart(mode=0,
@@ -294,7 +305,10 @@ class FrInterpolationController(mp.Process):
                 # update robot state
                 state = dict()
                 for key in self.receive_keys:
-                    state[key] = np.array(getattr(robot, 'Get'+key)())
+                    _, ret = getattr(robot, 'Get' + key)()
+                    if 'Pose' in key:
+                        ret = m_to_mm(ret, inverse=True)
+                    state[key] = np.array(ret)
                 t_recv = time.time()
                 state['robot_receive_timestamp'] = t_recv
                 state['robot_timestamp'] = t_recv - self.receive_latency

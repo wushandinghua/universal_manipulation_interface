@@ -206,7 +206,7 @@ class BimanualUmiEnv:
 
         cube_diag = np.linalg.norm([1,1,1])
         # 适配各自机械臂
-        j_init = np.array([0,-90,-90,-90,90,0]) / 180 * np.pi
+        j_init = [0,-90,-90,-90,90,0]
         if not init_joints:
             j_init = None
 
@@ -257,7 +257,7 @@ class BimanualUmiEnv:
                     max_pos_speed=1.0,
                     max_rot_speed=6*cube_diag, # todo:未知
                     launch_timeout=3,
-                    tcp_offset_pose=[0, 0, rc['tcp_offset'], 0, 0, 0],
+                    tcp_offset_pose=None,
                     payload_mass=None,
                     payload_com=None,
                     joints_init=j_init,

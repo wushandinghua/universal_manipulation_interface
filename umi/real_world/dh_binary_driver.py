@@ -214,7 +214,10 @@ class DHBinaryDriver:
         position_percent = int(((position / 80.0) * 1000))
         # print('position_percent',position_percent)
         self.SetTargetPosition(position_percent)
-        # time.sleep(1e-3)
+        g_state = 0
+        while g_state == 0:
+            g_state = self.GetGripState()
+            sleep(1e-3)
         return self.custom_script(position, velocity)
 
     # ================= 测试代码 ================
@@ -293,7 +296,7 @@ class DHBinaryDriver:
 
         self.close()
 
-if __name__ == '__main__':
-    driver = DHBinaryDriver('192.168.58.18', 8887)
-    driver.socket_gripper()
+# if __name__ == '__main__':
+#     driver = DHBinaryDriver('192.168.58.18', 8887)
+#     driver.socket_gripper()
 

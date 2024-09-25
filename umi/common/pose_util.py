@@ -113,3 +113,10 @@ def pose10d_to_mat(d10):
     out[...,:3,3] = pos
     out[...,3,3] = 1
     return out
+
+def m_to_mm(pose, inverse=False):
+    assert len(pose) == 6
+    for i in range(0, len(pose)):
+        if i <= 2:
+            pose[i] = pose[i] / 1000 if inverse else pose[i] * 1000
+    return pose
