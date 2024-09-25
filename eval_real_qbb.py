@@ -269,6 +269,7 @@ def main(input, output, robot_config,
 
             print('Ready!')
             while True:
+                '''
                 # ========= human control loop ==========
                 print("Human in control!")
                 robot_states = env.get_robot_state()
@@ -281,8 +282,7 @@ def main(input, output, robot_config,
 
                 t_start = time.monotonic()
                 iter_idx = 0
-                # while True:
-                while False:
+                while True:
                     # calculate timing
                     t_cycle_end = t_start + (iter_idx + 1) * dt
                     t_sample = t_cycle_end - command_latency
@@ -431,7 +431,7 @@ def main(input, output, robot_config,
                         compensate_latency=False)
                     precise_wait(t_cycle_end)
                     iter_idx += 1
-                
+                '''
                 # ========== policy control loop ==============
                 try:
                     # start episode
