@@ -5,7 +5,7 @@ import multiprocessing as mp
 from multiprocessing.managers import SharedMemoryManager
 import numpy as np
 
-from umi.common.pose_util import m_to_mm
+from umi.common.pose_util import adapt4fr
 from umi.shared_memory.shared_memory_queue import (
     SharedMemoryQueue, Empty)
 from umi.shared_memory.shared_memory_ring_buffer import SharedMemoryRingBuffer
@@ -133,7 +133,7 @@ class FrInterpolationController(mp.Process):
             # 一般返回二元组(ret_code, ret)，取第二个
             _, ret = getattr(self.robot, 'Get'+key)()
             if 'Pose' in key:
-                ret = m_to_mm(ret, inverse=True)
+                ret = adapt4fr(ret, toFr=False)
             example[key] = np.array(ret)
         example['robot_receive_timestamp'] = time.time()
         example['robot_timestamp'] = time.time()
@@ -269,7 +269,7 @@ class FrInterpolationController(mp.Process):
             dt = 1. / self.frequency
             error, curr_pose = robot.GetActualTCPPose()
             assert error == 0
-            curr_pose = m_to_mm(curr_pose, inverse=True)
+            curr_pose = adapt4fr(curr_pose, toFr=False)
             # use monotonic time to make sure the control loop never go backward
             curr_t = time.monotonic()
             last_waypoint_time = curr_t
@@ -295,7 +295,7 @@ class FrInterpolationController(mp.Process):
                 pose_command = pose_interp(t_now)
                 # 法奥位姿里的位置单位是毫米，这里需要转换
                 pose_command = list(pose_command)
-                pose_command = m_to_mm(pose_command)
+                pose_command = adapt4fr(pose_command)
                 vel = 50
                 acc = 50
                 error = robot.ServoCart(mode=0,
@@ -312,7 +312,7 @@ class FrInterpolationController(mp.Process):
                 for key in self.receive_keys:
                     _, ret = getattr(robot, 'Get' + key)()
                     if 'Pose' in key:
-                        ret = m_to_mm(ret, inverse=True)
+                        ret = adapt4fr(ret, toFr=False)
                     state[key] = np.array(ret)
                 t_recv = time.time()
                 state['robot_receive_timestamp'] = t_recv

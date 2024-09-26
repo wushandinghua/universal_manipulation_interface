@@ -114,9 +114,20 @@ def pose10d_to_mat(d10):
     out[...,3,3] = 1
     return out
 
-def m_to_mm(pose, inverse=False):
+def adapt4fr(pose, toFr=True):
     assert len(pose) == 6
     for i in range(0, len(pose)):
         if i <= 2:
-            pose[i] = pose[i] / 1000 if inverse else pose[i] * 1000
+            pose[i] = pose[i] * 1000 if toFr else pose[i] / 1000
+    # 默认是将旋转向量转欧拉角
+    if toFr:
+        rotvec = np.array(pose[3:])
+        rotation = st.Rotation.from_rotvec(rotvec)
+        euler_angles = rotation.as_eular('zyx', degrees=True)
+        pose[3:] = list(euler_angles)
+    else:
+        euler_angles = np.array(pose[3:])
+        rotation = st.Rotation.from_euler('zyx', euler_angles, degrees=True)
+        rotvec = rotation.as_rotvec()
+        pose[3:] = list(rotvec)
     return pose
