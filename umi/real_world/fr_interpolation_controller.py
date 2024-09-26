@@ -262,7 +262,7 @@ class FrInterpolationController(mp.Process):
                 tool:工具号，[0~14]；
                 user:工件号，[0~14]；
                 '''
-                assert robot.moveJ(self.joints_init, self.tool_id, 0) == 0
+                assert robot.MoveJ(self.joints_init, self.tool_id, 0) == 0
                 print('init robot end', self.joints_init)
 
             # main loop
