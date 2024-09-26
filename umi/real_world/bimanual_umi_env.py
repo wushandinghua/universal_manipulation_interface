@@ -255,7 +255,7 @@ class BimanualUmiEnv:
                     frequency=62.5,
                     lookahead_time=0.1,
                     gain=300,
-                    max_pos_speed=1.0,
+                    max_pos_speed=0.3,
                     max_rot_speed=5.0, # todo:未知
                     launch_timeout=3,
                     tcp_offset_pose=None,
