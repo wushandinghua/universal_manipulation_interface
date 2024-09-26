@@ -481,7 +481,7 @@ def main(input, output, robot_config,
                             result = policy.predict_action(obs_dict)
                             raw_action = result['action_pred'][0].detach().to('cpu').numpy()
                             action = get_real_umi_action(raw_action, obs, action_pose_repr)
-                            print('initial action:', action)
+                            #print('initial action:', action)
                             print('Inference latency:', time.time() - s)
                         
                         # convert policy action to env actions
@@ -522,7 +522,7 @@ def main(input, output, robot_config,
                             action_timestamps = action_timestamps[is_new]
 
                         # execute actions
-                        print('exec action:', this_target_poses)
+                        #print('exec action:', this_target_poses)
                         env.exec_actions(
                             actions=this_target_poses,
                             timestamps=action_timestamps,

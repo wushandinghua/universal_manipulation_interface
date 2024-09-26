@@ -303,7 +303,7 @@ class FrInterpolationController(mp.Process):
                                        vel=vel, acc=acc,
                                        cmdT=dt,
                                        filterT=self.lookahead_time, gain=self.gain)
-                print('t_now:', t_now, 'error:', error, 'pose:', pose_command)
+                # print('t_now:', t_now, 'error:', error, 'pose:', pose_command)
                 if error != 0:
                     print('error:', error, 'pose:', pose_command)
                 assert error == 0
