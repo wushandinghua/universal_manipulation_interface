@@ -123,7 +123,7 @@ def adapt4fr(pose, toFr=True):
     if toFr:
         rotvec = np.array(pose[3:])
         rotation = st.Rotation.from_rotvec(rotvec)
-        euler_angles = rotation.as_eular('zyx', degrees=True)
+        euler_angles = rotation.as_euler('zyx', degrees=True)
         pose[3:] = list(euler_angles)
     else:
         euler_angles = np.array(pose[3:])
