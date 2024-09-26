@@ -267,6 +267,7 @@ class FrInterpolationController(mp.Process):
 
             # main loop
             dt = 1. / self.frequency
+            dt = 1.0
             error, curr_pose = robot.GetActualTCPPose()
             assert error == 0
             curr_pose = adapt4fr(curr_pose, toFr=False)
@@ -296,7 +297,7 @@ class FrInterpolationController(mp.Process):
                 # 法奥位姿里的位置单位是毫米，这里需要转换
                 pose_command = list(pose_command)
                 pose_command = adapt4fr(pose_command)
-                vel = 50
+                vel = 30
                 acc = 50
                 error = robot.ServoCart(mode=0,
                                        desc_pos=pose_command,
