@@ -15,7 +15,7 @@ from umi.common.pose_util import rot6d_to_mat, mat_to_rot6d, adapt4fr
 # %%
 def test():
     poseFr = [606.122, -101.697, 91.379, -120.1, 0.005, -89.966]
-    pose0 = adapt4fr(poseFr, inverse=True)
+    pose0 = adapt4fr(poseFr, toFr=False)
     print(pose0)
     pose1 = adapt4fr(pose0)
     print(pose1)
