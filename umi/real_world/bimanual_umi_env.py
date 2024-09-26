@@ -264,7 +264,7 @@ class BimanualUmiEnv:
                     joints_init=j_init,
                     joints_init_speed=1.05,
                     soft_real_time=False,
-                    verbose=True,
+                    verbose=False,
                     receive_keys=None,
                     receive_latency=rc['robot_obs_latency']
                 )
