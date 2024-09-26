@@ -255,13 +255,13 @@ class FrInterpolationController(mp.Process):
                 assert robot.SetLoadCoord(self.payload_com[0], self.payload_com[1], self.payload_com[2]) == 0
             
             # init pose
+            print('init robot start', self.joints_init)
             if self.joints_init is not None:
                 '''
                 joint_pos:目标关节位置，单位[°]；
                 tool:工具号，[0~14]；
                 user:工件号，[0~14]；
                 '''
-                print('init robot start', self.joints_init)
                 assert robot.moveJ(self.joints_init, self.tool_id, 0) == 0
                 print('init robot end', self.joints_init)
 
