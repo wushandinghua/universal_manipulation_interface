@@ -207,7 +207,7 @@ class BimanualUmiEnv:
         cube_diag = np.linalg.norm([1,1,1])
         # 适配各自机械臂
         j_init = [0,-90,-90,-90,90,0]
-        #j_init = [90, -90, -90, -90, 90, 0]
+        j_init = [0, -120, -120, 30, 90, 0]
         if not init_joints:
             j_init = None
 
