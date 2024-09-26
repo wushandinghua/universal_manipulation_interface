@@ -154,7 +154,6 @@ def main(input, output, robot_config,
 
     # setup experiment
     dt = 1/frequency
-    dt = 1.0
 
     obs_res = get_real_obs_resolution(cfg.task.shape_meta)
     # load fisheye converter

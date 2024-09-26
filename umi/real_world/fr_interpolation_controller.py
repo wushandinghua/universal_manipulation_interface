@@ -279,8 +279,6 @@ class FrInterpolationController(mp.Process):
                 poses=[curr_pose]
             )
 
-            error = robot.ServoMoveStart()  # 伺服运动开始
-            print("伺服运动开始错误码：", error)
             t_start = time.monotonic()
             iter_idx = 0
             keep_running = True
@@ -299,12 +297,10 @@ class FrInterpolationController(mp.Process):
                 pose_command = adapt4fr(pose_command)
                 vel = 30
                 acc = 50
-                error = robot.ServoCart(mode=0,
-                                       desc_pos=pose_command,
-                                       vel=vel, acc=acc,
-                                       cmdT=dt,
-                                       filterT=self.lookahead_time, gain=self.gain)
-                # print('t_now:', t_now, 'error:', error, 'pose:', pose_command)
+                error = robot.MoveL(desc_pos=pose_command,
+                                    tool=self.tool_id, user=0,
+                                    vel=vel, acc=acc)
+                print('t_now:', t_now, 'error:', error, 'pose:', pose_command)
                 if error != 0:
                     print('error:', error, 'pose:', pose_command)
                 assert error == 0
@@ -397,8 +393,6 @@ class FrInterpolationController(mp.Process):
         finally:
             # manditory cleanup
             # decelerate
-            error = robot.ServoMoveEnd()  # 伺服运动结束
-            print("伺服运动结束错误码：", error)
 
             # terminate
             self.ready_event.set()

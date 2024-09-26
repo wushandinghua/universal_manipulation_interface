@@ -207,6 +207,7 @@ class BimanualUmiEnv:
         cube_diag = np.linalg.norm([1,1,1])
         # 适配各自机械臂
         j_init = [0,-90,-90,-90,90,0]
+        j_init = [90, -90, -90, -90, 90, 0]
         #j_init = [0, -120, -120, 30, 90, 0]
         if not init_joints:
             j_init = None
@@ -252,11 +253,11 @@ class BimanualUmiEnv:
                 this_robot = FrInterpolationController(
                     shm_manager=shm_manager,
                     robot_ip=rc['robot_ip'],
-                    frequency=62.5,
+                    frequency=125,
                     lookahead_time=0.1,
                     gain=300,
-                    max_pos_speed=0.3,
-                    max_rot_speed=5.0, # todo:未知
+                    max_pos_speed=1.0,
+                    max_rot_speed=6*cube_diag, # todo:未知
                     launch_timeout=3,
                     tcp_offset_pose=None,
                     payload_mass=None,
