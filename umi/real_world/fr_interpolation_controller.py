@@ -391,7 +391,8 @@ class FrInterpolationController(mp.Process):
 
                 if self.verbose:
                     print(f"[FrInterpolationController] Actual frequency {1/(time.monotonic() - t_now)}")
-
+        except Exception as e:
+            print('fr control error:', e)
         finally:
             # manditory cleanup
             # decelerate
