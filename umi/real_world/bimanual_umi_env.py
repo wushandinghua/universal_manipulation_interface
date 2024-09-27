@@ -285,7 +285,8 @@ class BimanualUmiEnv:
                 shm_manager=shm_manager,
                 hostname=gc['gripper_ip'],
                 port=gc['gripper_port'],
-                receive_latency=gc['gripper_obs_latency']
+                receive_latency=gc['gripper_obs_latency'],
+                use_meters=True
             )
 
             grippers.append(this_gripper)
