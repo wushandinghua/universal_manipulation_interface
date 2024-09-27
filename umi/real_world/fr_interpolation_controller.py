@@ -267,7 +267,6 @@ class FrInterpolationController(mp.Process):
 
             # main loop
             dt = 1. / self.frequency
-            dt = 1.0
             error, curr_pose = robot.GetActualTCPPose()
             assert error == 0
             curr_pose = adapt4fr(curr_pose, toFr=False)
@@ -279,6 +278,8 @@ class FrInterpolationController(mp.Process):
                 poses=[curr_pose]
             )
 
+            error = robot.ServoMoveStart()  # 伺服运动开始
+            print("伺服运动开始错误码：", error)
             t_start = time.monotonic()
             iter_idx = 0
             keep_running = True
@@ -295,11 +296,16 @@ class FrInterpolationController(mp.Process):
                 # 法奥位姿里的位置单位是毫米，这里需要转换
                 pose_command = list(pose_command)
                 pose_command = adapt4fr(pose_command)
-                vel = 30
+                vel = 50
                 acc = 50
-                error = robot.MoveL(desc_pos=pose_command,
-                                    tool=self.tool_id, user=0,
-                                    vel=vel, acc=acc)
+                error = robot.ServoCart(mode=0,
+                                        desc_pos=pose_command,
+                                        vel=vel, acc=acc,
+                                        cmdT=dt,
+                                        filterT=self.lookahead_time, gain=self.gain)
+                # error = robot.MoveL(desc_pos=pose_command,
+                #                     tool=self.tool_id, user=0,
+                #                     vel=vel, acc=acc)
                 print('t_now:', t_now, 'error:', error, 'pose:', pose_command)
                 if error != 0:
                     print('error:', error, 'pose:', pose_command)
@@ -393,6 +399,8 @@ class FrInterpolationController(mp.Process):
         finally:
             # manditory cleanup
             # decelerate
+            error = robot.ServoMoveEnd()  # 伺服运动结束
+            print("伺服运动结束错误码：", error)
 
             # terminate
             self.ready_event.set()
