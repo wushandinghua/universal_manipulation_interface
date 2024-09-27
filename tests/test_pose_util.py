@@ -17,6 +17,7 @@ def test():
     poseFr = [606.122, -101.697, 91.379, -120.1, 0.005, -89.966]
     pose0 = adapt4fr(poseFr, toFr=False)
     print(pose0)
+    pose0 = [ 1.01018480e-01,  3.41946253e-01,  7.42907405e-02,  1.61163946e-03,-1.24403810e-03, -3.14108487e+00]
     pose1 = adapt4fr(pose0)
     print(pose1)
     N = 100

@@ -480,8 +480,10 @@ def main(input, output, robot_config,
                                 lambda x: torch.from_numpy(x).unsqueeze(0).to(device))
                             result = policy.predict_action(obs_dict)
                             raw_action = result['action_pred'][0].detach().to('cpu').numpy()
+                            #print('initial action:', raw_action)
+                            print('initial actions length:', len(raw_action))
                             action = get_real_umi_action(raw_action, obs, action_pose_repr)
-                            #print('initial action:', action)
+                            #print('transform action:', action)
                             print('Inference latency:', time.time() - s)
                         
                         # convert policy action to env actions
