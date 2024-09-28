@@ -151,8 +151,13 @@ class DHController(mp.Process):
                     port=self.port) as dh:
 
                 # home gripper to initialize
+                print('=====夹爪初始化开始=====')
                 dh.Initialization()
-                sleep(2)
+                init_state = 0
+                while init_state != 1:
+                    init_state = dh.GetInitState()
+                    time.sleep(0.2)
+                print('=====夹爪初始化完成=====')
 
                 # get initial
                 curr_info = dh.custom_script()

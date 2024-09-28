@@ -80,6 +80,7 @@ class TimmObsEncoder(ModuleAttrMixin):
         low_dim_keys = list()
         key_model_map = nn.ModuleDict()
         key_transform_map = nn.ModuleDict()
+        key_eval_transform_map = nn.ModuleDict()
         key_shape_map = dict()
 
         assert global_pool == ''
@@ -144,6 +145,13 @@ class TimmObsEncoder(ModuleAttrMixin):
                 torchvision.transforms.Resize(size=image_shape[0], antialias=True)
             ] + transforms[1:]
         transform = nn.Identity() if transforms is None else torch.nn.Sequential(*transforms)
+        eval_transforms = None
+        if transforms is not None:
+            eval_transforms = [torchvision.transforms.Resize(size=image_shape[0], antialias=True)]
+            # if imagenet_norm:
+            #     eval_transforms = eval_transforms + [
+            #         torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]
+        eval_transform = nn.Identity() if transforms is None else torch.nn.Sequential(*eval_transforms)
 
         for key, attr in obs_shape_meta.items():
             shape = tuple(attr['shape'])
@@ -157,6 +165,7 @@ class TimmObsEncoder(ModuleAttrMixin):
 
                 this_transform = transform
                 key_transform_map[key] = this_transform
+                key_eval_transform_map[key] = eval_transform
             elif type == 'low_dim':
                 if not attr.get('ignore_by_policy', False):
                     low_dim_keys.append(key)
@@ -174,6 +183,7 @@ class TimmObsEncoder(ModuleAttrMixin):
         self.shape_meta = shape_meta
         self.key_model_map = key_model_map
         self.key_transform_map = key_transform_map
+        self.key_eval_transform_map = key_eval_transform_map
         self.share_rgb_model = share_rgb_model
         self.rgb_keys = rgb_keys
         self.low_dim_keys = low_dim_keys
@@ -263,7 +273,11 @@ class TimmObsEncoder(ModuleAttrMixin):
             assert B == batch_size
             assert img.shape[2:] == self.key_shape_map[key]
             img = img.reshape(B*T, *img.shape[2:])
-            img = self.key_transform_map[key](img)
+            # augmentation only during training
+            if self.training:
+                img = self.key_transform_map[key](img)
+            else:
+                img = self.key_eval_transform_map[key](img)
             raw_feature = self.key_model_map[key](img)
             feature = self.aggregate_feature(raw_feature)
             assert len(feature.shape) == 2 and feature.shape[0] == B * T
