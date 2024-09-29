@@ -476,6 +476,15 @@ def main(input, output, robot_config,
                                 obs_pose_repr=obs_pose_rep,
                                 tx_robot1_robot0=tx_robot1_robot0,
                                 episode_start_pose=episode_start_pose)
+                            # save input of model
+                            obs_data = {
+                                "obs_dict_np": obs_dict_np,
+                                "obs_pose_rep": obs_pose_rep,
+                                "obs": obs,
+                                "episode_start_pose": episode_start_pose,
+                                "tx_robot1_robot0": tx_robot1_robot0
+                            }
+                            np.save(os.path.join(output, 'obs', f'{episode_id}', f'{iter_idx}.npy'), obs_data, allow_pickle=True)
                             obs_dict = dict_apply(obs_dict_np, 
                                 lambda x: torch.from_numpy(x).unsqueeze(0).to(device))
                             result = policy.predict_action(obs_dict)
@@ -483,25 +492,31 @@ def main(input, output, robot_config,
                             #print('initial action:', raw_action)
                             print('initial actions length:', len(raw_action))
                             action = get_real_umi_action(raw_action, obs, action_pose_repr)
+                            action_data = {
+                                "raw_action": raw_action,
+                                "action": action,
+                                "action_pose_repr": action_pose_repr
+                            }
+                            np.save(os.path.join(output, 'action', f'{episode_id}', f'{iter_idx}.npy'), action_data, allow_pickle=True)
                             #print('transform action:', action)
                             print('Inference latency:', time.time() - s)
                         
                         # convert policy action to env actions
                         this_target_poses = action
                         assert this_target_poses.shape[1] == len(robots_config) * 7
-                        for target_pose in this_target_poses:
-                            for robot_idx in range(len(robots_config)):
-                                solve_table_collision(
-                                    ee_pose=target_pose[robot_idx * 7: robot_idx * 7 + 6],
-                                    gripper_width=target_pose[robot_idx * 7 + 6],
-                                    height_threshold=robots_config[robot_idx]['height_threshold']
-                                )
-                            
-                            # solve collison between two robots
-                            solve_sphere_collision(
-                                ee_poses=target_pose.reshape([len(robots_config), -1]),
-                                robots_config=robots_config
-                            )
+                        # for target_pose in this_target_poses:
+                        #     for robot_idx in range(len(robots_config)):
+                        #         solve_table_collision(
+                        #             ee_pose=target_pose[robot_idx * 7: robot_idx * 7 + 6],
+                        #             gripper_width=target_pose[robot_idx * 7 + 6],
+                        #             height_threshold=robots_config[robot_idx]['height_threshold']
+                        #         )
+                        #
+                        #     # solve collison between two robots
+                        #     solve_sphere_collision(
+                        #         ee_poses=target_pose.reshape([len(robots_config), -1]),
+                        #         robots_config=robots_config
+                        #     )
 
                         # deal with timing
                         # the same step actions are always the target for
