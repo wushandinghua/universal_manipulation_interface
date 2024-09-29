@@ -114,7 +114,7 @@ def pose10d_to_mat(d10):
     out[...,3,3] = 1
     return out
 
-def adapt4fr(pose, toFr=True):
+def adapt4fr(pose, rotationSeq='ZYX', toFr=True):
     assert len(pose) == 6
     for i in range(0, len(pose)):
         if i <= 2:
@@ -123,11 +123,11 @@ def adapt4fr(pose, toFr=True):
     if toFr:
         rotvec = np.array(pose[3:])
         rotation = st.Rotation.from_rotvec(rotvec)
-        euler_angles = rotation.as_euler('ZYX', degrees=True)
+        euler_angles = rotation.as_euler(rotationSeq, degrees=True)
         pose[3:] = list(euler_angles)
     else:
         euler_angles = np.array(pose[3:])
-        rotation = st.Rotation.from_euler('ZYX', euler_angles, degrees=True)
+        rotation = st.Rotation.from_euler(rotationSeq, euler_angles, degrees=True)
         rotvec = rotation.as_rotvec()
         pose[3:] = list(rotvec)
     return pose
