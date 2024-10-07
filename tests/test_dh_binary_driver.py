@@ -43,7 +43,7 @@ def test():
     driver.script_position_pd(pos, vel)
 
     position_and_velocitys = [(0, 20), (20, 40), (40, 40), (60, 20), (80, 20)]
-    for position, velocity in position_and_velocitys:
+    for position, velocity in sorted(position_and_velocitys, key=lambda x: x[0], reverse=True):
         g_state = 0
         pos, vel = driver.pre_position(position,velocity)
         # self.script_position_pd(position,velocity)
@@ -64,7 +64,7 @@ def test():
         print('===============================')
         time.sleep(delay_between_positions)
 
-    for position, velocity in sorted(position_and_velocitys, lambda x: x[0], reverse=True):
+    for position, velocity in position_and_velocitys:
         g_state = 0
         # 使用 pre_position 方法
         driver.script_position_pd(position, velocity, force)

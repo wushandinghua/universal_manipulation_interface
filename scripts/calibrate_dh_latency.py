@@ -14,15 +14,15 @@ import numpy as np
 from collections import deque
 from tqdm import tqdm
 from multiprocessing.managers import SharedMemoryManager
-from umi.real_world.wsg_controller import WSGController
+from umi.real_world.dh_controller import DHController
 from umi.common.precise_sleep import precise_sleep
 from umi.common.latency_util import get_latency
 from matplotlib import pyplot as plt
 
 # %%
 @click.command()
-@click.option('-h', '--hostname', default='172.24.95.18')
-@click.option('-p', '--port', type=int, default=1000)
+@click.option('-h', '--hostname', default='192.168.58.18')
+@click.option('-p', '--port', type=int, default=8887)
 @click.option('-f', '--frequency', type=float, default=30)
 def main(hostname, port, frequency):
     duration = 10.0
@@ -33,7 +33,7 @@ def main(hostname, port, frequency):
     width = value * 80
 
     with SharedMemoryManager() as shm_manager:
-        with WSGController(
+        with DHController(
             shm_manager=shm_manager,
             hostname=hostname,
             port=port,
