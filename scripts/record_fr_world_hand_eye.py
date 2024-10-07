@@ -34,7 +34,7 @@ def main(output, robot_ip, v4l_idx):
 
     max_pos_speed = 0.25
     max_rot_speed = 0.6
-    frequency = 10
+    frequency = 0.5
     cube_diag = np.linalg.norm([1,1,1])
     dt = 1 / frequency
 
@@ -73,7 +73,7 @@ def main(output, robot_ip, v4l_idx):
             # to init buffer.
             record_data_buffer = list()
             state = controller.get_state()
-            target_pose = state['TargetTCPPose']
+            target_pose = state['ActualTCPPose']
             stop = False
             while not stop:
                 t_cycle_start = time.time()
@@ -98,7 +98,9 @@ def main(output, robot_ip, v4l_idx):
                 cv2.pollKey()
 
                 # handle key presses
+                time.sleep(8)
                 press_events = key_counter.get_press_events()
+                print(press_events)
                 for key_stroke in press_events:
                     if key_stroke == KeyCode(char='q'):
                         stop = True

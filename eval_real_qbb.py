@@ -62,7 +62,7 @@ from umi.common.pose_util import pose_to_mat, mat_to_pose
 OmegaConf.register_new_resolver("eval", eval, replace=True)
 
 def solve_table_collision(ee_pose, gripper_width, height_threshold):
-    finger_thickness = 25.5 / 1000
+    finger_thickness = 18.0 / 1000
     keypoints = list()
     for dx in [-1, 1]:
         for dy in [-1, 1]:
@@ -484,6 +484,10 @@ def main(input, output, robot_config,
                                 "episode_start_pose": episode_start_pose,
                                 "tx_robot1_robot0": tx_robot1_robot0
                             }
+                            episode_id = env.replay_buffer.n_episodes
+                            obs_save_path = os.path.join(output, 'obs', f'{episode_id}')
+                            if not os.path.exists(obs_save_path):
+                                os.makedirs(obs_save_path)
                             np.save(os.path.join(output, 'obs', f'{episode_id}', f'{iter_idx}.npy'), obs_data, allow_pickle=True)
                             obs_dict = dict_apply(obs_dict_np, 
                                 lambda x: torch.from_numpy(x).unsqueeze(0).to(device))
@@ -497,6 +501,9 @@ def main(input, output, robot_config,
                                 "action": action,
                                 "action_pose_repr": action_pose_repr
                             }
+                            action_save_path = os.path.join(output, 'action', f'{episode_id}')
+                            if not os.path.exists(action_save_path):
+                                os.makedirs(action_save_path)
                             np.save(os.path.join(output, 'action', f'{episode_id}', f'{iter_idx}.npy'), action_data, allow_pickle=True)
                             #print('transform action:', action)
                             print('Inference latency:', time.time() - s)
@@ -504,19 +511,21 @@ def main(input, output, robot_config,
                         # convert policy action to env actions
                         this_target_poses = action
                         assert this_target_poses.shape[1] == len(robots_config) * 7
-                        # for target_pose in this_target_poses:
-                        #     for robot_idx in range(len(robots_config)):
-                        #         solve_table_collision(
-                        #             ee_pose=target_pose[robot_idx * 7: robot_idx * 7 + 6],
-                        #             gripper_width=target_pose[robot_idx * 7 + 6],
-                        #             height_threshold=robots_config[robot_idx]['height_threshold']
-                        #         )
-                        #
-                        #     # solve collison between two robots
-                        #     solve_sphere_collision(
-                        #         ee_poses=target_pose.reshape([len(robots_config), -1]),
-                        #         robots_config=robots_config
-                        #     )
+                        #print('pose before solve collision:', this_target_poses)
+                        for target_pose in this_target_poses:
+                            for robot_idx in range(len(robots_config)):
+                                solve_table_collision(
+                                    ee_pose=target_pose[robot_idx * 7: robot_idx * 7 + 6],
+                                    gripper_width=target_pose[robot_idx * 7 + 6],
+                                    height_threshold=robots_config[robot_idx]['height_threshold']
+                                )
+                        
+                            # solve collison between two robots
+                            #solve_sphere_collision(
+                            #    ee_poses=target_pose.reshape([len(robots_config), -1]),
+                            #    robots_config=robots_config
+                            #)
+                        #print('pose after solve collision:', this_target_poses)
 
                         # deal with timing
                         # the same step actions are always the target for
@@ -539,7 +548,7 @@ def main(input, output, robot_config,
                             action_timestamps = action_timestamps[is_new]
 
                         # execute actions
-                        #print('exec action:', this_target_poses)
+                        print('iter_idx:', iter_idx, ', exec action:', this_target_poses)
                         env.exec_actions(
                             actions=this_target_poses,
                             timestamps=action_timestamps,

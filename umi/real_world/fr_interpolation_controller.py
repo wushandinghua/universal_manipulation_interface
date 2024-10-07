@@ -296,7 +296,7 @@ class FrInterpolationController(mp.Process):
                 # 法奥位姿里的位置单位是毫米，这里需要转换
                 pose_command = list(pose_command)
                 pose_command = adapt4fr(pose_command)
-                print('t_now:', t_now, 'error:', error, 'pose:', pose_command)
+                #print('t_now:', t_now, 'error:', error, 'pose:', pose_command)
                 vel = 50
                 acc = 50
                 # error = robot.ServoCart(mode=0,

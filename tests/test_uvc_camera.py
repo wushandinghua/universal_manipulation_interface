@@ -41,7 +41,8 @@ def test():
         with UvcCamera(
             shm_manager=shm_manager,
             dev_video_path=v4l_path,
-            resolution=(1280, 720),
+            resolution=(1920, 1080),
+            #resolution=(1280, 720),
             capture_fps=60,
             video_recorder=video_recorder,
             put_downsample=False,
@@ -65,16 +66,16 @@ def test():
                 print(data['camera_capture_timestamp'] - data['camera_receive_timestamp'])
 
                 bgr = data['color']
-                # print(bgr.shape)
-                # cv2.imshow('default', bgr)
-                # key = cv2.pollKey()
-                # if key == ord('q'):
-                #     break
-                # elif key == ord('r'):
-                #     video_path = 'data_local/test.mp4'
-                #     realsense.start_recording(video_path)
-                # elif key == ord('s'):
-                #     realsense.stop_recording()
+                print(bgr.shape)
+                cv2.imshow('default', bgr)
+                key = cv2.pollKey()
+                if key == ord('q'):
+                    break
+                elif key == ord('r'):
+                    video_path = 'data_local/test.mp4'
+                    realsense.start_recording(video_path)
+                elif key == ord('s'):
+                    realsense.stop_recording()
                 
                 time.sleep(1/60)
                 if time.time() > (rec_start_time + 5.0):

@@ -122,7 +122,7 @@ class BimanualUmiEnv:
                     return data
                 transform.append(tf4k)
             else:
-                # res = (1920, 1080)
+                res = (1920, 1080)
                 res = (1280, 720)
                 fps = 60
                 buf = 1
@@ -207,7 +207,8 @@ class BimanualUmiEnv:
         cube_diag = np.linalg.norm([1,1,1])
         # 适配各自机械臂
         j_init = [0,-90,-90,-90,90,0]
-        j_init = [90, -90, -90, -90, 90, 0]
+        #j_init = [90, -90, -90, -90, 90, 0]
+        j_init = [-90, -90, -90, -90, 90, 0]
         #j_init = [0, -120, -120, 30, 90, 0]
         if not init_joints:
             j_init = None
