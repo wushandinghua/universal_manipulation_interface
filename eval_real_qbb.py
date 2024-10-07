@@ -532,7 +532,7 @@ def main(input, output, robot_config,
                         action_timestamps = (np.arange(len(action), dtype=np.float64)
                             ) * dt + obs_timestamps[-1]
                         print(dt)
-                        action_exec_latency = 0.01
+                        action_exec_latency = 0.3
                         curr_time = time.time()
                         is_new = action_timestamps > (curr_time + action_exec_latency)
                         if np.sum(is_new) == 0:

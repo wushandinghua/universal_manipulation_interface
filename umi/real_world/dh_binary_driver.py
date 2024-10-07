@@ -214,89 +214,9 @@ class DHBinaryDriver:
         position_percent = int(((position / 80.0) * 1000))
         # print('position_percent',position_percent)
         self.SetTargetPosition(position_percent)
-        g_state = 0
-        while g_state == 0:
-            g_state = self.GetGripState()
-            sleep(1e-3)
+        # g_state = 0
+        # while g_state == 0:
+        #     g_state = self.GetGripState()
+        #     sleep(1e-3)
         return self.custom_script(position, velocity)
-
-    # ================= 测试代码 ================
-    def socket_gripper(self):
-        hostanme = '192.168.58.18'
-        port = 8887
-        initstate = 0
-        force = 20
-        # Define positions (in mm) and their corresponding speeds
-
-        delay_between_positions = 2  # Fixed delay time (seconds)
-
-        self.open(hostanme, port)
-        print('===============================')
-        print('=====开始初始化=====')
-        # self.Initializationdirection()
-        self.Initialization()
-        sleep(1)
-
-        while initstate != 1:
-            initstate = self.GetInitState()
-            print('initstate',initstate)
-            sleep(1)
-        print('=====夹爪初始化完成=====')
-        print('===============================')
-
-        self.SetTargetForce(force)
-        print('force = ',force)
-        print('===============================')
-
-        pos = 0
-        vel = 20
-        # self.SetTargetPosition(pos)
-        # self.SetTargetSpeed(vel)
-        self.script_position_pd(pos, vel)
-
-        position_and_velocitys = [(0, 20), (20, 40), (40, 40), (60, 20), (80, 20)]
-        for position, velocity in position_and_velocitys:
-            g_state = 0
-            pos, vel = self.pre_position(position,velocity)
-            # self.script_position_pd(position,velocity)
-            self.SetTargetSpeed(int(vel))
-            # Convert mm position to percentage (0-1000)
-            position_percent = int((pos / 80.0) * 1000)
-            self.SetTargetPosition(position_percent)
-            # while g_state == 0:
-            #     g_state = self.GetGripState()
-            #     sleep(0.2)
-            sleep(1e-2)
-            g_position = self.GetCurrentPosition()
-            print('g_position (percent)', g_position)
-            print('g_position (mm)', g_position * 80 / 1000)
-            g_velocity = self.GetCurrentTargetSpeed()
-            print('g_velocity', g_velocity)
-            print('gripper_state', g_state)
-            print('===============================')
-            sleep(delay_between_positions)
-
-        for position, velocity in sorted(position_and_velocitys, lambda x: x[0], reverse=True):
-            g_state = 0
-            # 使用 pre_position 方法
-            self.script_position_pd(position, velocity, force)
-            # 等待夹爪动作完成
-            # while g_state == 0:
-            #     g_state = self.GetGripState()
-            #     sleep(0.43)
-            sleep(2e-2)
-            g_position = self.GetCurrentPosition()
-            print('g_position (percent)', g_position)
-            print('g_position (mm)', g_position * 80 / 1000)
-            g_velocity = self.GetCurrentTargetSpeed()
-            print('g_velocity', g_velocity)
-            print('gripper_state', g_state)
-            print('===============================')
-            sleep(delay_between_positions)
-
-        self.close()
-
-# if __name__ == '__main__':
-#     driver = DHBinaryDriver('192.168.58.18', 8887)
-#     driver.socket_gripper()
 
