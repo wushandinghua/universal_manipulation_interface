@@ -286,6 +286,7 @@ class BimanualUmiEnv:
                 shm_manager=shm_manager,
                 hostname=gc['gripper_ip'],
                 port=gc['gripper_port'],
+                move_max_speed=72.7,
                 receive_latency=gc['gripper_obs_latency'],
                 use_meters=True
             )
