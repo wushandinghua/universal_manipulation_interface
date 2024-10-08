@@ -635,16 +635,16 @@ class BimanualUmiEnv:
                     robot_pose = robot_pose_interpolator(timestamps)
                     episode[f'robot{robot_idx}_eef_pos'] = robot_pose[:,:3]
                     episode[f'robot{robot_idx}_eef_rot_axis_angle'] = robot_pose[:,3:]
-                    joint_pos_interpolator = get_interp1d(
-                        np.array(self.obs_accumulator.timestamps[f'robot{robot_idx}_joint_pos']),
-                        np.array(self.obs_accumulator.data[f'robot{robot_idx}_joint_pos'])
-                    )
-                    joint_vel_interpolator = get_interp1d(
-                        np.array(self.obs_accumulator.timestamps[f'robot{robot_idx}_joint_vel']),
-                        np.array(self.obs_accumulator.data[f'robot{robot_idx}_joint_vel'])
-                    )
-                    episode[f'robot{robot_idx}_joint_pos'] = joint_pos_interpolator(timestamps)
-                    episode[f'robot{robot_idx}_joint_vel'] = joint_vel_interpolator(timestamps)
+                    # joint_pos_interpolator = get_interp1d(
+                    #     np.array(self.obs_accumulator.timestamps[f'robot{robot_idx}_joint_pos']),
+                    #     np.array(self.obs_accumulator.data[f'robot{robot_idx}_joint_pos'])
+                    # )
+                    # joint_vel_interpolator = get_interp1d(
+                    #     np.array(self.obs_accumulator.timestamps[f'robot{robot_idx}_joint_vel']),
+                    #     np.array(self.obs_accumulator.data[f'robot{robot_idx}_joint_vel'])
+                    # )
+                    # episode[f'robot{robot_idx}_joint_pos'] = joint_pos_interpolator(timestamps)
+                    # episode[f'robot{robot_idx}_joint_vel'] = joint_vel_interpolator(timestamps)
 
                     gripper_interpolator = get_interp1d(
                         t=np.array(self.obs_accumulator.timestamps[f'robot{robot_idx}_gripper_width']),

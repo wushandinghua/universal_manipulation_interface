@@ -158,7 +158,7 @@ class DHBinaryDriver:
     # 初始化夹爪方向：0x00为夹爪会运行到最大的张开位置，并作为初始起点
     #                0x01为夹爪会运行到最小的闭合位置，并作为初始起点
     def Initializationdirection(self):
-        self.WriteRegisterFunc(0x0300, 0x00)
+        self.WriteRegisterFunc(0x0301, 0x00)
 
     # 设置夹爪位置
     def SetTargetPosition(self, refpos):
