@@ -309,7 +309,8 @@ class FrInterpolationController(mp.Process):
                                     vel=vel, acc=acc)
                 if error != 0:
                     print('error:', error, 'pose:', pose_command)
-                assert error == 0
+                # assert error == 0
+
                 # update robot state
                 state = dict()
                 for key in self.receive_keys:
